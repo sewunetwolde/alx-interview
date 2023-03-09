@@ -1,17 +1,19 @@
 #!/usr/bin/node
 
+const util = require('util');
 const request = require('request');
 
-request('https://swapi-api.hbtn.io/api/films/' + process.argv[2], function (err, res, body) {
-  if (err) throw err;
-  const actors = JSON.parse(body).characters;
-  exactOrder(actors, 0);
-});
-const exactOrder = (actors, x) => {
-  if (x === actors.length) return;
-  request(actors[x], function (err, res, body) {
-    if (err) throw err;
-    console.log(JSON.parse(body).name);
-    exactOrder(actors, x + 1);
-  });
-};
+if (process.argv[2] === undefined) {
+  console.log('Usage: node <FILENAME> <id>');
+} else {
+  (async () => {
+    const requestPromise = util.promisify(request);
+    const url = 'https://swapi-api.hbtn.io/api/films/' + process.argv[2];
+    const body = (await requestPromise(url)).body;
+    const abc = JSON.parse(body).characters;
+    for (let i = 0; i < abc.length; i++) {
+      const char = (await requestPromise(abc[i])).body;
+      console.log(JSON.parse(char).name);
+    }
+  })();
+}
